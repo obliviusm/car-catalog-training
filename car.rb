@@ -1,3 +1,5 @@
+require 'pry'
+
 def assert(val)
   unless val
     STDERR.puts 'Failed'
@@ -8,10 +10,18 @@ end
 
 class Car
   attr_accessor :colour, :body, :engine_type
-  def initialize(opts)
+
+  def method_missing(method, *args)
+    send("#{method}=", args.first) if respond_to?("#{method}=")
+  end
+
+  def initialize(opts={}, &block)
     opts.each do |key,value|
-      next unless respond_to?(key, "#{key}=")
-      send("#{key}=", value)
+      send("#{key}=", value) if
+        respond_to?("#{key}=")
+    end
+    if block_given?
+      instance_exec &block
     end
   end
 end
@@ -37,3 +47,28 @@ c3 = Car.new(engine_type: :diesel)
 assert c3.engine_type == :diesel
 c3.engine_type = :gas
 assert c3.engine_type == :gas
+
+c4 = begin
+       Car.new
+     rescue
+       false
+     end
+assert c4
+
+c5 = Car.new do |c|
+  c.colour = :green
+  c.body   = :pretty
+  c.engine_type = :electro
+end
+
+assert c5.colour  == :green &&
+        c5.body   == :pretty &&
+        c5.engine_type == :electro
+
+c6 = Car.new do
+  colour :black
+  body   :batmobile
+  engine_type :neutrino
+end
+
+assert c6.colour == :black && c6.body == :batmobile && c6.engine_type == :neutrino
