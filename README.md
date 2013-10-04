@@ -1,4 +1,4 @@
 Car Catalog training
 ====================
 
-Run `ruby ./car`
+Run `ruby ./car.rb`
