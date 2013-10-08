@@ -18,6 +18,8 @@ class Car
       else
         instance_variable_set(:"@#{method.to_s.gsub('=', '')}", args.first)
       end
+    else
+      super
     end
   end
 
