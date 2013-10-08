@@ -12,7 +12,7 @@ class Car
   ATTRIBUTES = %w[colour body engine_type]
 
   def method_missing(method, *args, &block)
-    if in_whitelist? method.to_s
+    if respond_to? method
       if args.length == 0
         instance_variable_get(:"@#{method}")
       else
@@ -34,12 +34,12 @@ class Car
     end
   end
 
-  private
-  def in_whitelist? arg
-    return true if ATTRIBUTES.include? arg
-    ATTRIBUTES.each { |a| return true if "#{a}=" == arg }
-    false
+  def respond_to? arg
+    return true if ATTRIBUTES.include? arg.to_s
+    ATTRIBUTES.each { |a| return true if "#{a}=" == arg.to_s }
+    super
   end
+
 end
 
 assert defined? Car
