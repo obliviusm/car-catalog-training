@@ -9,27 +9,38 @@ def assert(val)
 end
 
 class Car
-  attr_accessor :colour, :body, :engine_type
+  ATTRIBUTES = %w[colour body engine_type]
 
-  def method_missing(method, *args)
-    send("#{method}=", args.first) if respond_to?("#{method}=")
+  def method_missing(method, *args, &block)
+    if in_whitelist? method.to_s
+      if args.length == 0
+        instance_variable_get(:"@#{method}")
+      else
+        instance_variable_set(:"@#{method.to_s.gsub('=', '')}", args.first)
+      end
+    end
   end
 
   def initialize(opts={}, &block)
     opts.each do |key,value|
-      send("#{key}=", value) if
-        respond_to?("#{key}=")
+      send("#{key}=", value)
     end
     if block_given?
-      instance_exec &block
+      if block.arity == 0
+        instance_eval &block
+      else
+        instance_exec self, &block
+      end
     end
   end
+
+  private
+  def in_whitelist? arg
+    return true if ATTRIBUTES.include? arg
+    ATTRIBUTES.each { |a| return true if "#{a}=" == arg }
+    false
+  end
 end
-
-
-
-
-
 
 assert defined? Car
 
